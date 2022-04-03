@@ -4,15 +4,22 @@ class Pdfjam < Formula
   url "https://github.com/rrthomas/pdfjam/archive/refs/tags/v3.03.tar.gz"
   head "https://github.com/rrthomas/pdfjam.git"
   sha256 "bd27e44e75909cac2a53f0c8d0b253d9c95e496a181b7837f7919724dff78b69"
-  
+
   depends_on "gnu-sed" => :build
 
   def install
     if build.head?
       opoo "Building from HEAD may not work because of GNU/BSD sed differences"
-      ENV["PATH"] = Formula["gnu-sed"].libexec/"gnubin"
+      ENV["PATH"] = Formula["gnu-sed"].libexec/"gnubin" + ":" + ENV["PATH"]
+
+      open(buildpath/"VERSION", 'a') do |f|
+        f.write("-#{version}")
+      end
+
+      real_version = File.read(buildpath/"VERSION").match(/pdfjam (.*)$/)[1]
+
       system "bash", "build.sh"
-      build_dir = buildpath / "built_package/pdfjam-#{version}"
+      build_dir = buildpath / "built_package" / "pdfjam-#{real_version}"
     else
       build_dir = buildpath
     end
